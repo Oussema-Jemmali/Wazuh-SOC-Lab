@@ -1,14 +1,11 @@
-# 🛡️ Wazuh SOC Lab  
-### Security Operations Center Laboratory with Wazuh SIEM, pfSense Firewall & HAProxy High Availability
+# 🛡️ Wazuh SOC Lab
+
+<h3 align="center">
+Enterprise-like SOC Infrastructure Simulation using Wazuh SIEM, pfSense Firewall, HAProxy Load Balancing and GNS3
+</h3>
 
 <p align="center">
-
-<img src="assets/logo.png" width="180">
-
-</p>
-
-<p align="center">
-A virtual SOC infrastructure designed to simulate enterprise security monitoring, network protection, and highly available web services.
+A cybersecurity laboratory designed to simulate a Security Operations Center (SOC) environment by integrating security monitoring, network protection, and high availability services.
 </p>
 
 <p align="center">
@@ -16,8 +13,8 @@ A virtual SOC infrastructure designed to simulate enterprise security monitoring
 ![Wazuh](https://img.shields.io/badge/SIEM-Wazuh-blue)
 ![pfSense](https://img.shields.io/badge/Firewall-pfSense-orange)
 ![HAProxy](https://img.shields.io/badge/Load%20Balancer-HAProxy-green)
-![GNS3](https://img.shields.io/badge/Network-GNS3-purple)
-![Linux](https://img.shields.io/badge/Platform-Linux-yellow)
+![GNS3](https://img.shields.io/badge/Network%20Simulation-GNS3-purple)
+![Linux](https://img.shields.io/badge/OS-Ubuntu%20Server-yellow)
 
 </p>
 
@@ -25,37 +22,38 @@ A virtual SOC infrastructure designed to simulate enterprise security monitoring
 
 # 📌 Project Overview
 
-The **Wazuh SOC Lab** is a cybersecurity infrastructure project that combines:
+The **Wazuh SOC Lab** is a virtual cybersecurity infrastructure built to reproduce a simplified enterprise SOC environment.
 
-- Security Information and Event Management (SIEM)
-- Firewall protection
-- Load balancing
-- Web server availability
-- Network simulation
+The project combines:
 
-The objective is to build a realistic enterprise-like environment where security events can be collected, analyzed, and monitored while maintaining service availability.
+- SIEM monitoring using Wazuh
+- Network security using pfSense firewall
+- High availability using HAProxy
+- Web service deployment using Apache servers
+- Network simulation using GNS3
 
-The entire infrastructure was simulated using **GNS3** and **VirtualBox**.
+The goal is to demonstrate how security monitoring and network services can be integrated into a centralized security architecture.
 
 ---
 
-# 🏗️ Architecture
+# 🏗️ Lab Architecture
 
 <p align="center">
 
-<img src="assets/architecture.png" width="700">
+<img src="assets/architecture.png" width="750">
 
 </p>
 
 
-The laboratory contains:
+The infrastructure consists of:
 
 | Component | Role |
 |-----------|------|
-| pfSense | Firewall, Router, HAProxy Load Balancer |
-| Apache1 | Web Server + Wazuh Agent |
-| Apache2 | Secondary Web Server |
-| Wazuh Server | SIEM Platform |
+| pfSense | Firewall, gateway and HAProxy load balancer |
+| Apache1 | Web server + Wazuh monitored endpoint |
+| Apache2 | Secondary web server for failover |
+| Wazuh Server | SIEM platform for security monitoring |
+| GNS3 | Network topology simulation |
 
 ---
 
@@ -76,78 +74,170 @@ The laboratory contains:
 
 ---
 
-# ⚙️ Implemented Features
+# ⚙️ Implemented Components
 
 ## 🔥 pfSense Firewall
 
+pfSense was deployed as the main network security component.
+
 Implemented:
 
-- Network gateway configuration
+- Network routing
 - Firewall management
-- Internal network connectivity
-- HAProxy package integration
+- Internal network communication
+- HAProxy package installation
+
+Documentation:
+
+```
+docs/04-pfSense-Configuration.md
+```
 
 ---
 
-## ⚖️ HAProxy Load Balancing
+# ⚖️ HAProxy Load Balancing
 
-Configured:
+HAProxy was configured on pfSense to provide high availability for Apache services.
 
-- Frontend listener
-- Backend pool
-- Apache1 and Apache2 servers
-- Health monitoring
+Implemented:
 
-HAProxy provides:
-
-- Traffic distribution
-- Backend availability checking
+- Frontend configuration
+- Backend configuration
+- Health checks
 - Automatic failover
 
+Architecture:
+
+```
+                 HAProxy
+
+                    |
+          ___________________
+         |                   |
+         v                   v
+
+      Apache1             Apache2
+       UP                  UP
+```
+
+During failure:
+
+```
+                 HAProxy
+
+                    |
+                    v
+
+                 Apache2
+                   UP
+```
+
+Documentation:
+
+```
+docs/05-HAProxy-Configuration.md
+
+configs/pfsense/
+├── haproxy-frontend.md
+└── haproxy-backend.md
+```
+
 ---
 
-## 🖥️ Apache Web Servers
+# 🖥️ Apache Web Servers
 
-Two Apache servers were deployed:
+Two Apache servers were deployed as HAProxy backend nodes.
 
-### Apache1
+## Apache1
 
 Role:
 
 - Primary web server
 - Wazuh monitored endpoint
 
-### Apache2
+Integrated with:
+
+- Wazuh Agent
+
+Configuration:
+
+```
+configs/apache/apache1-config.md
+```
+
+---
+
+## Apache2
 
 Role:
 
-- Backup web server
-- High availability backend
+- Secondary web server
+- Failover server
+
+Configuration:
+
+```
+configs/apache/apache2-config.md
+```
 
 ---
 
-## 🛡️ Wazuh SIEM Deployment
+# 🛡️ Wazuh SIEM Deployment
 
-Configured:
+The Wazuh platform was deployed on Ubuntu Server.
 
-- Wazuh Server
+Components:
+
+- Wazuh Manager
+- Wazuh Indexer
 - Wazuh Dashboard
-- Wazuh Agent on Apache1
 
-The platform provides:
+The Wazuh agent was installed on Apache1 to collect security events.
 
-- Log collection
-- Security event analysis
-- Endpoint monitoring
-- Alert generation
+Architecture:
+
+```
+Apache1
+
+   |
+   |
+Wazuh Agent
+
+   |
+   |
+Wazuh Manager
+
+   |
+   |
+Wazuh Dashboard
+```
+
+Documentation:
+
+```
+docs/
+
+06-Wazuh-Server-Installation.md
+07-Wazuh-Agent-Installation.md
+```
+
+Configuration references:
+
+```
+configs/wazuh/
+
+├── ossec.conf
+├── agent.conf
+└── manager-notes.md
+```
 
 ---
 
-# 🧪 Testing & Validation
+# 🧪 Testing and Validation
 
 ## HAProxy Failover Test
 
-A high availability test was performed:
+A high availability test was performed.
 
 ### Scenario
 
@@ -167,21 +257,24 @@ Apache2  → ACTIVE
 Service  → AVAILABLE
 ```
 
-✅ HAProxy successfully maintained service availability.
+The test confirmed successful automatic failover.
 
 ---
 
-# 🧰 Technologies Used
+# 📸 Project Screenshots
 
-| Technology | Purpose |
-|------------|---------|
-| Wazuh | SIEM and security monitoring |
-| pfSense | Firewall and routing |
-| HAProxy | Load balancing |
-| Apache2 | Web services |
-| Ubuntu Server | Linux infrastructure |
-| GNS3 | Network simulation |
-| VirtualBox | Virtualization |
+Screenshots demonstrating the implementation:
+
+```
+screenshots/
+
+├── gns3.png
+├── haproxy-dashboard.png
+├── backend-online.png
+├── backend-failover.png
+├── wazuh-agent.png
+└── wazuh-dashboard.png
+```
 
 ---
 
@@ -205,54 +298,31 @@ Wazuh-SOC-Lab/
 │   ├── 08-Testing-and-Validation.md
 │   ├── 09-Troubleshooting.md
 │   └── 10-Future-Improvements.md
-
+│
 ├── configs/
 │   ├── pfsense/
-│   │   ├── haproxy-backend.md
-│   │   └── haproxy-frontend.md
-│   │
 │   ├── wazuh/
-│   │   ├── ossec.conf
-│   │   ├── agent.conf
-│   │   └── manager-notes.md
-│   │
 │   └── apache/
-│       ├── apache1-config.md
-│       └── apache2-config.md
-
+│
 ├── screenshots/
-
+│
 └── assets/
-    ├── architecture.png
-    └── logo.png
+    └── architecture.png
 ```
 
 ---
 
-# 🎯 Skills Demonstrated
+# 🧰 Technologies Used
 
-This project demonstrates practical knowledge in:
-
-### Cybersecurity
-
-- SIEM deployment
-- Security monitoring
-- Log analysis
-- Endpoint monitoring
-
-### Network Security
-
-- Firewall configuration
-- Network segmentation
-- Traffic management
-- High availability design
-
-### Infrastructure
-
-- Linux administration
-- Virtualization
-- Network simulation
-- Service deployment
+| Technology | Usage |
+|------------|-------|
+| Wazuh | SIEM and security monitoring |
+| pfSense | Firewall and network security |
+| HAProxy | Load balancing and failover |
+| Apache2 | Web services |
+| Ubuntu Server | Linux infrastructure |
+| GNS3 | Network simulation |
+| VirtualBox | Virtualization |
 
 ---
 
@@ -260,12 +330,12 @@ This project demonstrates practical knowledge in:
 
 Planned enhancements:
 
-- Add Suricata IDS/IPS integration
+- Integrate Suricata IDS/IPS
 - Add Windows endpoint monitoring with Sysmon
 - Create custom Wazuh detection rules
 - Add attack simulation scenarios
 - Automate deployment using Ansible
-- Integrate additional security monitoring tools
+- Expand the SOC monitoring environment
 
 ---
 
@@ -273,12 +343,13 @@ Planned enhancements:
 
 **Oussema Jemmali**
 
-Cybersecurity Engineering Student / SOC Enthusiast
+Cybersecurity Engineering Student
 
-Focus areas:
+Areas of interest:
 
+- SOC Operations
 - Network Security
-- SIEM
+- SIEM Technologies
 - Firewall Administration
 - Infrastructure Security
 
