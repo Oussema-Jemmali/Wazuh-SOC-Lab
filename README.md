@@ -64,19 +64,6 @@ HAProxy dashboard showing backend server monitoring and availability status.
 
 ---
 
-## HAProxy Failover Test
-
-<p align="center">
-
-<img src="screenshots/backend-failover.png" width="850">
-
-</p>
-
-The failover scenario was tested by stopping the Apache service on Apache1.
-
-HAProxy detected the failure and automatically continued forwarding traffic to Apache2.
-
----
 
 ## Wazuh Agent Monitoring
 
@@ -109,12 +96,6 @@ The entire environment was deployed using **GNS3** and **VirtualBox**.
 ---
 
 # 🏗️ Lab Architecture
-
-<p align="center">
-
-<img src="assets/architecture.png" width="750">
-
-</p>
 
 The infrastructure contains:
 
