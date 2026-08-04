@@ -386,13 +386,8 @@ Wazuh-SOC-Lab/
 │   ├── topology.png
 │   ├── gns3.png
 │   ├── haproxy-dashboard.png
-│   ├── backend-online.png
-│   ├── backend-failover.png
 │   ├── wazuh-agent.png
 │   └── wazuh-dashboard.png
-│
-└── assets/
-    └── architecture.png
 ```
 
 ---
