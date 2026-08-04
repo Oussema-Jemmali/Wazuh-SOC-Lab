@@ -207,7 +207,22 @@ configs/pfsense/
 ```
 
 ---
+# 🌍 Service Access
 
+The services are accessed through the following endpoints:
+
+| Service | Access |
+|---------|--------|
+| pfSense WebGUI | https://<pfSense-IP> |
+| HAProxy Frontend | http://<pfSense-IP>:8080 |
+| HAProxy Statistics | http://<pfSense-IP>:8404 |
+| Apache1 | Internal backend server on port 80 |
+| Apache2 | Internal backend server on port 80 |
+
+Users access the web service through HAProxy instead of directly accessing Apache servers.
+HAProxy distributes requests between Apache1 and Apache2 and provides automatic failover.
+
+---
 # 🖥️ Apache Web Servers
 
 Two Apache servers were deployed as HAProxy backend nodes.
