@@ -1,0 +1,107 @@
+# =========================
+# Operating System Files
+# =========================
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+
+# =========================
+# Virtualization Files
+# =========================
+
+# VirtualBox
+*.vdi
+*.vmdk
+*.vbox
+*.vbox-prev
+
+# GNS3
+*.gns3
+*.gns3project
+*.gns3a
+*.gns3b
+
+
+# =========================
+# Sensitive Configuration Data
+# =========================
+
+# Private keys
+*.key
+*.pem
+*.crt
+
+# Password files
+*.password
+*.passwd
+*.secret
+
+# Environment files
+.env
+
+
+# =========================
+# Wazuh Sensitive Files
+# =========================
+
+# Agent authentication keys
+client.keys
+
+# Wazuh generated logs
+ossec.log
+alerts.json
+archives.json
+
+
+# =========================
+# Logs
+# =========================
+
+*.log
+logs/
+
+
+# =========================
+# Temporary Files
+# =========================
+
+*.tmp
+*.temp
+*.bak
+*.swp
+
+
+# =========================
+# IDE / Editor Files
+# =========================
+
+.vscode/
+.idea/
+
+
+# =========================
+# Build / Cache Files
+# =========================
+
+.cache/
+__pycache__/
+
+
+# =========================
+# Large Files
+# =========================
+
+# Virtual machine exports
+*.ova
+*.ovf
+
+# Disk images
+*.iso
+*.img
