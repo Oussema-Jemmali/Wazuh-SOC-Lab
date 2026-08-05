@@ -129,6 +129,29 @@ Apache2 continued serving requests successfully.
 
 The test confirmed that HAProxy provides service continuity.
 
+# HAProxy Logging Integration
+
+## Enable Logging
+
+HAProxy logging was enabled on pfSense to monitor backend availability.
+
+The logs contain important events:
+
+- Backend server UP
+- Backend server DOWN
+- Connection failures
+- Health check results
+
+
+Example event:
+
+haproxy:
+Server agil_web_servers_ipvANY/apache_vm1 is DOWN,
+reason: Layer4 connection problem
+
+
+These logs are forwarded to Wazuh through Syslog.
+
 ## HAProxy Benefits in This Lab
 
 The HAProxy implementation provides:

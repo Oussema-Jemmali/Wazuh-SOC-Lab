@@ -5,7 +5,7 @@ Enterprise-like SOC Infrastructure Simulation using Wazuh SIEM, pfSense Firewall
 </h3>
 
 <p align="center">
-A cybersecurity laboratory designed to simulate a Security Operations Center (SOC) environment by integrating security monitoring, network protection, and high availability services.
+A cybersecurity laboratory designed to simulate a Security Operations Center (SOC) environment by integrating SIEM monitoring, firewall protection, high availability services, and network simulation.
 </p>
 
 <p align="center">
@@ -48,7 +48,7 @@ The complete SOC laboratory topology showing:
 
 </p>
 
-The infrastructure was simulated using GNS3 with virtual machines connected through a virtual network environment.
+The infrastructure was simulated using GNS3 with virtual machines connected through an internal network environment.
 
 ---
 
@@ -64,7 +64,6 @@ HAProxy dashboard showing backend server monitoring and availability status.
 
 ---
 
-
 ## Wazuh Agent Monitoring
 
 <p align="center">
@@ -77,6 +76,18 @@ Apache1 successfully registered as a monitored endpoint in the Wazuh platform.
 
 ---
 
+## Wazuh SIEM Alert Detection
+
+<p align="center">
+
+<img src="screenshots/wazuh-dashboard.png" width="850">
+
+</p>
+
+Wazuh Dashboard displaying HAProxy availability events received from pfSense through Syslog and detected using custom rules.
+
+---
+
 # 📌 Project Overview
 
 The **Wazuh SOC Lab** is a virtual cybersecurity infrastructure built to reproduce a simplified enterprise Security Operations Center environment.
@@ -85,8 +96,9 @@ The project combines:
 
 - Security Information and Event Management (SIEM)
 - Firewall protection
-- Load balancing
-- Web service availability
+- Load balancing and high availability
+- Centralized log collection
+- Security event detection
 - Network simulation
 
 The objective is to demonstrate the integration between security monitoring and network infrastructure components.
@@ -128,7 +140,7 @@ The infrastructure contains:
 
 # ⚙️ Implemented Components
 
-## 🔥 pfSense Firewall
+# 🔥 pfSense Firewall
 
 pfSense was deployed as the main network security component.
 
@@ -138,11 +150,22 @@ Implemented:
 - Firewall configuration
 - Internal network communication
 - HAProxy integration
+- Syslog forwarding to Wazuh
 
 Documentation:
 
 ```
 docs/04-pfSense-Configuration.md
+```
+
+Configuration:
+
+```
+configs/pfsense/
+
+├── haproxy-frontend.md
+├── haproxy-backend.md
+└── syslog-wazuh.md
 ```
 
 ---
@@ -157,6 +180,7 @@ Implemented:
 - Backend configuration
 - Health checks
 - Automatic failover
+- Logging integration
 
 Traffic flow:
 
@@ -178,17 +202,17 @@ Apache1       Apache2
 Normal operation:
 
 ```
-Apache1  → UP
+Apache1 → UP
 
-Apache2  → UP
+Apache2 → UP
 ```
 
 Failure scenario:
 
 ```
-Apache1  → DOWN
+Apache1 → DOWN
 
-Apache2  → ACTIVE
+Apache2 → ACTIVE
 ```
 
 Documentation:
@@ -197,32 +221,26 @@ Documentation:
 docs/05-HAProxy-Configuration.md
 ```
 
-Configuration:
-
-```
-configs/pfsense/
-
-├── haproxy-frontend.md
-└── haproxy-backend.md
-```
-
 ---
+
 # 🌍 Service Access
 
-The services are accessed through the following endpoints:
+The services are accessed through:
 
 | Service | Access |
 |---------|--------|
 | pfSense WebGUI | https://<pfSense-IP> |
 | HAProxy Frontend | http://<pfSense-IP>:8080 |
 | HAProxy Statistics | http://<pfSense-IP>:8404 |
-| Apache1 | Internal backend server on port 80 |
-| Apache2 | Internal backend server on port 80 |
+| Apache1 | Internal backend server |
+| Apache2 | Internal backend server |
 
-Users access the web service through HAProxy instead of directly accessing Apache servers.
+Users access web services through HAProxy instead of directly accessing Apache servers.
+
 HAProxy distributes requests between Apache1 and Apache2 and provides automatic failover.
 
 ---
+
 # 🖥️ Apache Web Servers
 
 Two Apache servers were deployed as HAProxy backend nodes.
@@ -236,7 +254,7 @@ Role:
 
 Integrated components:
 
-- Apache2 web server
+- Apache2 web service
 - Wazuh Agent
 
 Configuration:
@@ -274,23 +292,39 @@ Components installed:
 
 The Wazuh Agent was installed on Apache1 to collect endpoint security events.
 
+Additionally, pfSense was integrated with Wazuh using remote Syslog forwarding to collect HAProxy events.
+
 Architecture:
 
 ```
 Apache1
-
-    |
-    |
+   |
 Wazuh Agent
-
-    |
-    |
+   |
 Wazuh Manager
-
-    |
-    |
+   |
 Wazuh Dashboard
+
+
+pfSense
+   |
+HAProxy Logs
+   |
+Syslog UDP 514
+   |
+Wazuh Manager
+   |
+Custom Detection Rules
+   |
+Wazuh Dashboard Alerts
 ```
+
+Implemented:
+
+- Syslog collection
+- HAProxy event monitoring
+- Custom Wazuh detection rules
+- Dashboard alert visualization
 
 Documentation:
 
@@ -298,7 +332,8 @@ Documentation:
 docs/
 
 ├── 06-Wazuh-Server-Installation.md
-└── 07-Wazuh-Agent-Installation.md
+├── 07-Wazuh-Agent-Installation.md
+└── 08-Testing-and-Validation.md
 ```
 
 Configuration:
@@ -308,6 +343,7 @@ configs/wazuh/
 
 ├── ossec.conf
 ├── agent.conf
+├── local_rules.xml
 └── manager-notes.md
 ```
 
@@ -315,29 +351,60 @@ configs/wazuh/
 
 # 🧪 Testing and Validation
 
+The laboratory was tested through multiple scenarios.
+
 ## HAProxy Failover Test
 
-A high availability test was performed.
-
-### Test Scenario
+Scenario:
 
 1. Apache1 and Apache2 were running.
 2. Client accessed the service through HAProxy.
-3. Apache service was stopped on Apache1.
+3. Apache1 service was stopped.
 4. HAProxy detected Apache1 failure.
 5. Traffic continued through Apache2.
 
 Result:
 
 ```
-Apache1  → DOWN
+Apache1 → DOWN
 
-Apache2  → ACTIVE
+Apache2 → ACTIVE
 
 Web Service → AVAILABLE
 ```
 
-The test validated successful automatic failover.
+---
+
+## Wazuh HAProxy Detection Test
+
+The integration between pfSense HAProxy and Wazuh SIEM was validated.
+
+Workflow:
+
+```
+Apache1 Failure
+        |
+        v
+HAProxy Health Check
+        |
+        v
+pfSense Syslog
+        |
+        v
+Wazuh Manager
+        |
+        v
+Custom Detection Rule
+        |
+        v
+Wazuh Dashboard Alert
+```
+
+Detected events:
+
+- Backend server DOWN
+- Backend server UP
+- Service recovery
 
 Documentation:
 
@@ -371,11 +438,13 @@ Wazuh-SOC-Lab/
 ├── configs/
 │   ├── pfsense/
 │   │   ├── haproxy-frontend.md
-│   │   └── haproxy-backend.md
+│   │   ├── haproxy-backend.md
+│   │   └── syslog-wazuh.md
 │   │
 │   ├── wazuh/
 │   │   ├── ossec.conf
 │   │   ├── agent.conf
+│   │   ├── local_rules.xml
 │   │   └── manager-notes.md
 │   │
 │   └── apache/
@@ -387,7 +456,9 @@ Wazuh-SOC-Lab/
 │   ├── gns3.png
 │   ├── haproxy-dashboard.png
 │   ├── wazuh-agent.png
-│   └── wazuh-dashboard.png
+│   ├── wazuh-dashboard.png
+│   ├── haproxy-apache1-failure-test.png
+│   └── wazuh-apache1-recovery-alert.png
 ```
 
 ---
@@ -413,7 +484,8 @@ Wazuh-SOC-Lab/
 - SIEM deployment
 - Security monitoring
 - Log analysis
-- Endpoint monitoring
+- Custom detection rules
+- Alert investigation
 
 ## Network Security
 
@@ -421,6 +493,7 @@ Wazuh-SOC-Lab/
 - Network segmentation
 - Load balancing
 - High availability design
+- Syslog integration
 
 ## Infrastructure
 
@@ -437,7 +510,6 @@ Planned enhancements:
 
 - Integrate Suricata IDS/IPS
 - Add Windows endpoint monitoring with Sysmon
-- Create custom Wazuh detection rules
 - Add attack simulation scenarios
 - Automate deployment using Ansible
 - Expand SOC monitoring capabilities

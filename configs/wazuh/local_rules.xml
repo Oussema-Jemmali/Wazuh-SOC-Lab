@@ -1,0 +1,36 @@
+# Custom HAProxy Detection Rules
+
+These rules allow Wazuh to detect HAProxy backend availability events.
+
+## Apache1 Down Detection
+
+Rule ID:
+100100
+
+Level:
+8
+
+Detection:
+
+Server agil_web_servers_ipvANY/apache_vm1 is DOWN
+
+Action:
+
+Generate an alert indicating Apache1 backend failure and failover to Apache2.
+
+
+## Apache1 Recovery Detection
+
+Rule ID:
+100101
+
+Level:
+5
+
+Detection:
+
+Server agil_web_servers_ipvANY/apache_vm1 is UP
+
+Action:
+
+Generate an alert indicating Apache1 backend recovery.
