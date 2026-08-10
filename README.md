@@ -286,15 +286,15 @@ The Wazuh platform was deployed on Ubuntu Server.
 
 Components installed:
 
-- Wazuh Manager
-- Wazuh Indexer
-- Wazuh Dashboard
+* Wazuh Manager
+* Wazuh Indexer
+* Wazuh Dashboard
 
 The Wazuh Agent was installed on Apache1 to collect endpoint security events.
 
-Additionally, pfSense was integrated with Wazuh using remote Syslog forwarding to collect HAProxy events.
+Additionally, pfSense was integrated with Wazuh using remote Syslog forwarding to collect HAProxy and firewall events.
 
-Architecture:
+## Architecture
 
 ```
 Apache1
@@ -308,25 +308,32 @@ Wazuh Dashboard
 
 pfSense
    |
-HAProxy Logs
-   |
-Syslog UDP 514
-   |
-Wazuh Manager
-   |
-Custom Detection Rules
-   |
-Wazuh Dashboard Alerts
+   +------------------+
+   |                  |
+HAProxy Logs      Firewall Logs
+   |                  |
+   +--------+---------+
+            |
+       Syslog UDP 514
+            |
+      Wazuh Manager
+            |
+   Custom Detection Rules
+            |
+      Wazuh Dashboard
 ```
 
-Implemented:
+## Implemented
 
-- Syslog collection
-- HAProxy event monitoring
-- Custom Wazuh detection rules
-- Dashboard alert visualization
+* Wazuh SIEM deployment
+* Wazuh Agent monitoring
+* Remote Syslog collection
+* HAProxy event monitoring
+* pfSense firewall event monitoring
+* Custom Wazuh detection rules
+* Dashboard alert visualization
 
-Documentation:
+## Documentation
 
 ```
 docs/
@@ -336,7 +343,7 @@ docs/
 └── 08-Testing-and-Validation.md
 ```
 
-Configuration:
+## Configuration
 
 ```
 configs/wazuh/
@@ -351,27 +358,29 @@ configs/wazuh/
 
 # 🧪 Testing and Validation
 
-The laboratory was tested through multiple scenarios.
+The laboratory was tested through multiple scenarios to validate high availability, log collection, event detection, and SIEM monitoring.
 
 ## HAProxy Failover Test
 
 Scenario:
 
 1. Apache1 and Apache2 were running.
-2. Client accessed the service through HAProxy.
-3. Apache1 service was stopped.
-4. HAProxy detected Apache1 failure.
-5. Traffic continued through Apache2.
+2. The client accessed the web service through HAProxy.
+3. The Apache2 service was stopped.
+4. HAProxy detected the Apache2 failure.
+5. The web service remained available through Apache1.
 
 Result:
 
 ```
-Apache1 → DOWN
+Apache2 → DOWN
 
-Apache2 → ACTIVE
+Apache1 → ACTIVE
 
 Web Service → AVAILABLE
 ```
+
+The test confirmed that HAProxy provides automatic failover between the Apache backend servers.
 
 ---
 
@@ -382,13 +391,13 @@ The integration between pfSense HAProxy and Wazuh SIEM was validated.
 Workflow:
 
 ```
-Apache1 Failure
+Apache Server Failure
         |
         v
 HAProxy Health Check
         |
         v
-pfSense Syslog
+HAProxy Syslog Event
         |
         v
 Wazuh Manager
@@ -402,14 +411,87 @@ Wazuh Dashboard Alert
 
 Detected events:
 
-- Backend server DOWN
-- Backend server UP
-- Service recovery
+* Backend server DOWN
+* Backend server UP
+* Service recovery
+* Backend availability changes
+
+The events were successfully received by Wazuh and displayed as alerts in the Wazuh Dashboard.
 
 Documentation:
 
 ```
 docs/08-Testing-and-Validation.md
+```
+
+---
+
+## pfSense Firewall Event Detection Test
+
+A firewall event was generated to verify the integration between pfSense and Wazuh.
+
+A temporary firewall rule was configured on pfSense to block TCP port 9999.
+
+Test command:
+
+```
+nc -vz -w 3 192.168.1.1 9999
+```
+
+The blocked connection generated a pfSense filterlog event.
+
+Workflow:
+
+```
+Wazuh Server
+      |
+      | TCP connection attempt
+      v
+pfSense Firewall
+      |
+      | Block
+      v
+pfSense filterlog
+      |
+      | Syslog UDP 514
+      v
+Wazuh Manager
+      |
+      | Custom Detection Rule
+      v
+Wazuh Dashboard Alert
+```
+
+The Syslog traffic was verified using:
+
+```
+sudo tcpdump -i any -A udp port 514
+```
+
+The event was also verified in the Wazuh archives:
+
+```
+sudo tail -f /var/ossec/logs/archives/archives.log
+```
+
+The test confirmed that:
+
+* pfSense successfully generated a firewall event.
+* The event was forwarded to Wazuh using Syslog.
+* Wazuh successfully received the filterlog event.
+* A custom Wazuh rule detected the event.
+* The firewall event appeared as an alert in the Wazuh Dashboard.
+
+Result:
+
+```
+pfSense Firewall Event → DETECTED
+
+Syslog Transmission → PASS
+
+Wazuh Detection Rule → PASS
+
+Wazuh Dashboard Alert → PASS
 ```
 
 ---
@@ -465,15 +547,15 @@ Wazuh-SOC-Lab/
 
 # 🧰 Technologies Used
 
-| Technology | Purpose |
-|------------|---------|
-| Wazuh | SIEM and security monitoring |
-| pfSense | Firewall and network security |
-| HAProxy | Load balancing and failover |
-| Apache2 | Web server services |
-| Ubuntu Server | Linux infrastructure |
-| GNS3 | Network simulation |
-| VirtualBox | Virtualization |
+| Technology    | Purpose                                |
+| ------------- | -------------------------------------- |
+| Wazuh         | SIEM and security monitoring           |
+| pfSense       | Firewall, routing and network security |
+| HAProxy       | Load balancing and high availability   |
+| Apache2       | Web server services                    |
+| Ubuntu Server | Linux infrastructure                   |
+| GNS3          | Network simulation                     |
+| VirtualBox    | Virtualization                         |
 
 ---
 
@@ -481,26 +563,29 @@ Wazuh-SOC-Lab/
 
 ## Cybersecurity
 
-- SIEM deployment
-- Security monitoring
-- Log analysis
-- Custom detection rules
-- Alert investigation
+* SIEM deployment
+* Security monitoring
+* Log analysis
+* Custom detection rules
+* Alert investigation
+* Centralized log collection
 
 ## Network Security
 
-- Firewall configuration
-- Network segmentation
-- Load balancing
-- High availability design
-- Syslog integration
+* Firewall configuration
+* Syslog integration
+* Network segmentation
+* Load balancing
+* High availability design
+* Network event monitoring
 
 ## Infrastructure
 
-- Linux administration
-- Virtualization
-- Network simulation
-- Service deployment
+* Linux administration
+* Virtualization
+* Network simulation
+* Service deployment
+* Infrastructure monitoring
 
 ---
 
@@ -508,11 +593,14 @@ Wazuh-SOC-Lab/
 
 Planned enhancements:
 
-- Integrate Suricata IDS/IPS
-- Add Windows endpoint monitoring with Sysmon
-- Add attack simulation scenarios
-- Automate deployment using Ansible
-- Expand SOC monitoring capabilities
+* Integrate Suricata IDS/IPS
+* Add Windows endpoint monitoring with Sysmon
+* Add attack simulation scenarios
+* Extend pfSense firewall detection rules
+* Add more custom Wazuh detection rules
+* Automate deployment using Ansible
+* Implement DMZ and internal network segmentation
+* Expand SOC monitoring capabilities
 
 ---
 
@@ -524,11 +612,11 @@ Cybersecurity Engineering Student
 
 Focus areas:
 
-- SOC Operations
-- Network Security
-- SIEM Technologies
-- Firewall Administration
-- Infrastructure Security
+* SOC Operations
+* Network Security
+* SIEM Technologies
+* Firewall Administration
+* Infrastructure Security
 
 ---
 

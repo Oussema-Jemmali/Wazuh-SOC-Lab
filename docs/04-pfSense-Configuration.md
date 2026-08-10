@@ -135,3 +135,19 @@ The final pfSense deployment successfully provides:
 - HAProxy load balancing.
 - High availability for Apache services.
 - Central point for traffic management.
+
+## Remote Syslog Configuration
+
+pfSense was configured to forward firewall and HAProxy logs to the Wazuh Manager using remote Syslog.
+
+Configuration:
+
+- Source Address: LAN
+- IP Protocol: IPv4
+- Remote Syslog Server: Wazuh Server
+- Syslog Port: UDP 514
+- Remote Syslog Contents: Firewall Events
+
+The Wazuh Manager was configured to receive Syslog messages on UDP port 514.
+
+This integration allows pfSense security and infrastructure events to be centrally collected and analyzed by Wazuh.
